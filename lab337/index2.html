@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新闻资讯网页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .left-section {
+            flex: 3;
+            margin-right: 20px;
+        }
+        .right-section {
+            flex: 2;
+        }
+        .news-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .news-item h3 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        .image-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .image-row img {
+            width: 180px;
+            height: 120px;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+        .author {
+            color: #666;
+            font-size: 14px;
+        }
+        .hot-news {
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            padding: 15px;
+        }
+        .hot-news h4 {
+            margin-bottom: 10px;
+        }
+        .hot-news a {
+            text-decoration: none;
+            color: #0066cc;
+        }
+        .hot-news a img {
+            width: 100%;
+            height: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="left-section">
+            <!-- 左半部分新闻 -->
+            <div class="news-item">
+                <h3>神舟十七号航天任务最新进展</h3>
+                <div class="image-row">
+                    <img src="news1-1.jpg" alt="新闻图片1">
+                    <img src="news1-2.jpg" alt="新闻图片2">
+                </div>
+                <p class="author">作者：航天新闻组</p>
+            </div>
+            <div class="news-item">
+                <h3>人工智能在医疗领域的突破应用</h3>
+                <div class="image-row">
+                    <img src="news2-1.jpg" alt="新闻图片1">
+                    <img src="news2-2.jpg" alt="新闻图片2">
+                </div>
+                <p class="author">作者：科技前沿</p>
+            </div>
+            <div class="news-item">
+                <h3>新能源汽车销量再创新高</h3>
+                <div class="image-row">
+                    <img src="news3-1.jpg" alt="新闻图片1">
+                    <img src="news3-2.jpg" alt="新闻图片2">
+                </div>
+                <p class="author">作者：财经观察</p>
+            </div>
+        </div>
+        <div class="right-section">
+            <!-- 右半部分热点新闻 -->
+            <div class="hot-news">
+                <h4><a href="#">量子计算技术的最新突破</a></h4>
+                <a href="#"><img src="hot1.jpg" alt="热点图片1"></a>
+            </div>
+            <div class="hot-news">
+                <h4><a href="#">深海探测新发现神秘生物</a></h4>
+                <a href="#"><img src="hot2.jpg" alt="热点图片2"></a>
+            </div>
+            <div class="hot-news">
+                <h4><a href="#">全球气候变化最新研究报告</a></h4>
+                <a href="#"><img src="hot3.jpg" alt="热点图片3"></a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
