@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f9;
+            perspective: 1000px;
+        }
+
+       .image-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            transform-style: preserve-3d;
+            animation: rotate 15s linear infinite;
+        }
+
+       .image-container img {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+       .image-container img:hover {
+            transform: scale(1.1) translateZ(200px);
+            filter: brightness(1.2);
+        }
+
+       .image-container:hover {
+            animation-play-state: paused;
+        }
+
+       .image-container img:nth-child(1) {
+            transform: rotateY(0deg) translateZ(200px);
+        }
+
+       .image-container img:nth-child(2) {
+            transform: rotateY(90deg) translateZ(200px);
+        }
+
+       .image-container img:nth-child(3) {
+            transform: rotateY(180deg) translateZ(200px);
+        }
+
+       .image-container img:nth-child(4) {
+            transform: rotateY(270deg) translateZ(200px);
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotateY(0deg);
+            }
+            to {
+                transform: rotateY(360deg);
+            }
+        }
+    </style>
+    <title>4张图片3D旋转展示</title>
+</head>
+
+<body>
+    <div class="image-container">
+		 <img src="1.jpg" alt="本地照片">
+		  <img src="12.jpg" alt="本地照片">
+		   <img src="123.jpg" alt="本地照片">
+		    <img src="1234.jpg" alt="本地照片">
+    </div>
+</body>
+
+</html>    
