@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>七彩霓虹灯</title>
+    <style>
+        .light {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 15px;
+            display: inline-block;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        button {
+            margin: 10px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="light" id="light1"></div>
+        <div class="light" id="light2"></div>
+        <div class="light" id="light3"></div>
+        <div class="light" id="light4"></div>
+        <div class="light" id="light5"></div>
+        <div class="light" id="light6"></div>
+        <div class="light" id="light7"></div>
+    </div>
+    <button id="startBtn">启动</button>
+    <button id="stopBtn" disabled>停止</button>
+    <button id="randomBtn">随机颜色</button>
+
+    <script>
+        const lights = document.querySelectorAll('.light');
+        const colors = ['#FF0000', '#FFA500', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#EE82EE'];
+        let indexes = [0, 0, 0, 0, 0, 0, 0];
+        let intervalId;
+        let isRunning = false;
+
+        function updateLights() {
+            lights.forEach((light, index) => {
+                const colorIndex = (indexes[index] + index) % colors.length;
+                light.style.backgroundColor = colors[colorIndex];
+                indexes[index] = (indexes[index] + 1) % colors.length;
+            });
+        }
+
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (!isRunning) {
+                intervalId = setInterval(updateLights, 500);
+                isRunning = true;
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+                document.getElementById('randomBtn').disabled = true;
+            }
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            if (isRunning) {
+                clearInterval(intervalId);
+                isRunning = false;
+                document.getElementById('startBtn').disabled = false;
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('randomBtn').disabled = false;
+                // 保留当前颜色状态，不重置
+            }
+        });
+
+        document.getElementById('randomBtn').addEventListener('click', () => {
+            if (!isRunning) {
+                lights.forEach(light => {
+                    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                    light.style.backgroundColor = randomColor;
+                });
+            }
+        });
+    </script>
+</body>
+</html>
