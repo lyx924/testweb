@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>随机点名册</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#60a5fa',
+                        accent: '#bfdbfe',
+                        neutral: '#f1f5f9',
+                        dark: '#0f172a'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .text-shadow-lg {
+                text-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+            }
+            .bg-gradient-blue {
+                background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+            }
+            .transition-all-300 {
+                transition: all 0.3s ease;
+            }
+            .hover-scale {
+                @apply hover:scale-105 transition-all duration-300;
+            }
+            .card-shadow {
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-gradient-blue text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-random text-2xl"></i>
+                <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-shadow-lg">随机点名册</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <button id="helpBtn" class="hover-scale p-2 rounded-full hover:bg-white/20 transition-all duration-300">
+                    <i class="fa-solid fa-question-circle text-xl"></i>
+                </button>
+                <button id="settingsBtn" class="hover-scale p-2 rounded-full hover:bg-white/20 transition-all duration-300">
+                    <i class="fa-solid fa-cog text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- 点名结果显示 -->
+        <section class="mb-12 text-center">
+            <div class="relative inline-block">
+                <div id="resultContainer" class="bg-white rounded-2xl p-8 card-shadow mb-6 min-h-[200px] flex flex-col items-center justify-center transition-all duration-500">
+                    <h2 class="text-gray-500 text-xl mb-4">等待点名...</h2>
+                    <div id="resultNumber" class="text-[clamp(3rem,8vw,5rem)] font-bold text-primary mb-2 opacity-0 transition-all duration-500"></div>
+                    <div id="resultAnimation" class="hidden">
+                        <i class="fa-solid fa-circle-notch fa-spin text-4xl text-primary/50"></i>
+                    </div>
+                </div>
+                <button id="rollBtn" class="bg-gradient-blue hover:bg-primary text-white font-bold py-4 px-10 rounded-full text-xl shadow-lg hover-scale focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-300 flex items-center">
+                    <i class="fa-solid fa-play mr-2"></i>
+                    开始点名
+                </button>
+            </div>
+        </section>
+
+        <!-- 点名历史记录 -->
+        <section class="bg-white rounded-xl p-6 card-shadow">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+                    <i class="fa-solid fa-history text-primary mr-2"></i>
+                    点名历史
+                </h2>
+                <button id="clearHistoryBtn" class="text-primary hover:text-primary/80 font-medium transition-all duration-300 flex items-center">
+                    <i class="fa-solid fa-trash-can mr-1"></i>
+                    清空历史
+                </button>
+            </div>
+            <div id="historyList" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 max-h-[300px] overflow-y-auto p-2">
+                <!-- 历史记录将动态添加到这里 -->
+                <div class="text-center text-gray-500 col-span-full py-8">
+                    <i class="fa-solid fa-clock-rotate-left text-4xl mb-3 opacity-30"></i>
+                    <p>暂无点名记录</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 点名设置 -->
+        <section class="mt-8 bg-white rounded-xl p-6 card-shadow">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center mb-6">
+                <i class="fa-solid fa-sliders text-primary mr-2"></i>
+                点名设置
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2">点名方式</label>
+                    <div class="flex space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="rollType" value="name" class="form-radio h-5 w-5 text-primary" checked>
+                            <span class="ml-2 text-gray-700">按姓名点名</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="rollType" value="number" class="form-radio h-5 w-5 text-primary">
+                            <span class="ml-2 text-gray-700">按学号点名</span>
+                        </label>
+                    </div>
+                </div>
+                <div id="nameListContainer">
+                    <label for="nameList" class="block text-gray-700 font-medium mb-2">学生名单（每行一个姓名）</label>
+                    <textarea id="nameList" rows="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300">卜家豪
+陈亚欣
+丁晓萱
+董恩浩
+段鹏松
+房茜卓
+高俊腾
+高鹿桐
+谷天乐
+何沛洋
+贾旭
+靳思同
+李凤豪
+李嘉兴
+李建宇
+李万琪
+李欣宇
+李业勤
+刘百刚
+刘冰倩
+刘峻泽
+刘一翔
+刘宇倩
+刘志龙
+毛诚一
+邵尚薇
+孙健玮
+王宪斌
+王政皓
+王志甲
+王子林
+吴梦瑶
+邢嘉旺
+徐佳慧
+许珈玮
+张连祥
+张淑恒
+张韵
+张照毅
+张智
+张璐璐
+赵含蕊
+赵正阳
+赵珈艺
+祝祥和</textarea>
+                </div>
+                <div id="numberRangeContainer">
+                    <label for="minNumber" class="block text-gray-700 font-medium mb-2">最小学号</label>
+                    <input type="number" id="minNumber" value="1" min="1" max="44" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300">
+                </div>
+                <div id="numberRangeContainer">
+                    <label for="maxNumber" class="block text-gray-700 font-medium mb-2">最大学号</label>
+                    <input type="number" id="maxNumber" value="45" min="2" max="99" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="excludeNumbers" class="block text-gray-700 font-medium mb-2">排除项（学号或姓名，多个用逗号分隔）</label>
+                    <input type="text" id="excludeNumbers" placeholder="例如: 3,张连祥,8" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-300">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="noRepeat" class="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary">
+                        <span class="ml-2 text-gray-700">不重复点名（点过的不会再次出现，直到清空历史）</span>
+                    </label>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p>© 2025 随机点名册 | 一个简单实用的课堂工具</p>
+            <div class="mt-3 flex justify-center space-x-4">
+                <a href="#" class="hover:text-primary transition-all duration-300"><i class="fa-brands fa-github"></i></a>
+                <a href="#" class="hover:text-primary transition-all duration-300"><i class="fa-brands fa-twitter"></i></a>
+                <a href="#" class="hover:text-primary transition-all duration-300"><i class="fa-brands fa-facebook"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 帮助模态框 -->
+    <div id="helpModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl max-w-lg w-full max-h-[80vh] overflow-y-auto mx-4 transform transition-all duration-300 scale-95 opacity-0" id="helpModalContent">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-gray-800">使用帮助</h3>
+                    <button id="closeHelpBtn" class="text-gray-500 hover:text-gray-700 transition-all duration-300">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-1">如何使用点名功能？</h4>
+                        <p class="text-gray-600">点击"开始点名"按钮，系统将随机选择一个学生并显示在上方的结果区域。再次点击按钮可以重新点名。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-1">如何切换点名方式？</h4>
+                        <p class="text-gray-600">在"点名设置"区域，可以选择按姓名或学号进行点名。按姓名点名时，请确保已在学生名单中输入了所有学生的姓名。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-1">如何设置学号范围？</h4>
+                        <p class="text-gray-600">在"点名设置"区域，选择"按学号点名"后，可以调整最小学号和最大学号。默认范围是1-45。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-1">如何排除特定学生？</h4>
+                        <p class="text-gray-600">在"排除项"输入框中，可以输入要排除的学号或姓名，多个项之间用逗号分隔。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-1">如何查看历史记录？</h4>
+                        <p class="text-gray-600">所有点名结果都会显示在"点名历史"区域，可以随时查看。点击"清空历史"按钮可以清除所有记录。</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-700 mb-1">不重复点名功能有什么作用？</h4>
+                        <p class="text-gray-600">启用此功能后，系统不会重复点名已经出现过的学生，直到清空历史记录。</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 rounded-b-xl flex justify-end">
+                <button id="gotItBtn" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all duration-300">
+                    我知道了
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取DOM元素
+            const rollBtn = document.getElementById('rollBtn');
+            const resultNumber = document.getElementById('resultNumber');
+            const resultAnimation = document.getElementById('resultAnimation');
+            const historyList = document.getElementById('historyList');
+            const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+            const minNumberInput = document.getElementById('minNumber');
+            const maxNumberInput = document.getElementById('maxNumber');
+            const excludeNumbersInput = document.getElementById('excludeNumbers');
+            const noRepeatCheckbox = document.getElementById('noRepeat');
+            const helpBtn = document.getElementById('helpBtn');
+            const helpModal = document.getElementById('helpModal');
+            const helpModalContent = document.getElementById('helpModalContent');
+            const closeHelpBtn = document.getElementById('closeHelpBtn');
+            const gotItBtn = document.getElementById('gotItBtn');
+            const settingsBtn = document.getElementById('settingsBtn');
+            const nameListTextarea = document.getElementById('nameList');
+            const rollTypeRadios = document.querySelectorAll('input[name="rollType"]');
+            const nameListContainer = document.getElementById('nameListContainer');
+            const numberRangeContainer = document.querySelectorAll('#numberRangeContainer');
+
+            // 历史记录数组
+            let history = JSON.parse(localStorage.getItem('rollCallHistory')) || [];
+            let isRolling = false;
+            let rollInterval;
+            let currentRollType = 'name'; // 默认按姓名点名
+
+            // 渲染历史记录
+            function renderHistory() {
+                if (history.length === 0) {
+                    historyList.innerHTML = `
+                        <div class="text-center text-gray-500 col-span-full py-8">
+                            <i class="fa-solid fa-clock-rotate-left text-4xl mb-3 opacity-30"></i>
+                            <p>暂无点名记录</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                historyList.innerHTML = '';
+                history.forEach((item, index) => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'bg-accent/30 rounded-lg p-3 text-center hover-scale';
+                    historyItem.innerHTML = `
+                        <span class="text-sm text-gray-500">第${index + 1}次</span>
+                        <div class="text-2xl font-bold text-primary mt-1">${item}</div>
+                    `;
+                    historyList.appendChild(historyItem);
+                });
+            }
+
+            // 保存历史记录到本地存储
+            function saveHistory() {
+                localStorage.setItem('rollCallHistory', JSON.stringify(history));
+            }
+
+            // 获取可用的名单
+            function getAvailableItems() {
+                let items = [];
+                
+                if (currentRollType === 'name') {
+                    // 获取姓名列表
+                    const nameList = nameListTextarea.value.split('\n')
+                        .map(name => name.trim())
+                        .filter(name => name.length > 0);
+                    
+                    if (nameList.length === 0) {
+                        alert('请在学生名单中输入至少一个姓名');
+                        return [];
+                    }
+                    
+                    items = nameList;
+                } else {
+                    // 获取学号列表
+                    const min = parseInt(minNumberInput.value) || 1;
+                    const max = parseInt(maxNumberInput.value) || 45;
+                    
+                    // 确保最小值不大于最大值
+                    if (min > max) {
+                        minNumberInput.value = max - 1;
+                        return getAvailableItems();
+                    }
+
+                    // 生成学号数组
+                    for (let i = min; i <= max; i++) {
+                        items.push(i.toString());
+                    }
+                }
+
+                // 解析排除的项
+                const excludeItems = excludeNumbersInput.value.split(',')
+                    .map(item => item.trim())
+                    .filter(item => item.length > 0);
+
+                // 过滤排除的项
+                items = items.filter(item => !excludeItems.includes(item.toString()));
+
+                // 如果启用了不重复点名，排除已经出现过的项
+                if (noRepeatCheckbox.checked) {
+                    items = items.filter(item => !history.includes(item));
+                }
+
+                return items;
+            }
+
+            // 随机选择一个项
+            function rollItem() {
+                const availableItems = getAvailableItems();
+                
+                if (availableItems.length === 0) {
+                    if (noRepeatCheckbox.checked) {
+                        alert('所有项都已经点过了，请清空历史记录后再试。');
+                    } else {
+                        alert('没有可用的项，请检查你的设置。');
+                    }
+                    stopRolling();
+                    return;
+                }
+
+                return availableItems[Math.floor(Math.random() * availableItems.length)];
+            }
+
+            // 开始滚动动画
+            function startRolling() {
+                if (isRolling) return;
+                
+                isRolling = true;
+                rollBtn.innerHTML = '<i class="fa-solid fa-stop mr-2"></i>停止点名';
+                rollBtn.classList.remove('bg-gradient-blue');
+                rollBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+                resultNumber.classList.add('opacity-0');
+                resultAnimation.classList.remove('hidden');
+                
+                let counter = 0;
+                rollInterval = setInterval(() => {
+                    counter++;
+                    resultNumber.textContent = rollItem();
+                    resultNumber.classList.remove('opacity-0');
+                    
+                    // 动画速度逐渐减慢
+                    if (counter > 10) {
+                        clearInterval(rollInterval);
+                        rollInterval = setInterval(() => {
+                            resultNumber.textContent = rollItem();
+                        }, 150);
+                    }
+                }, 50);
+            }
+
+            // 停止滚动并显示最终结果
+            function stopRolling() {
+                if (!isRolling) return;
+                
+                clearInterval(rollInterval);
+                isRolling = false;
+                rollBtn.innerHTML = '<i class="fa-solid fa-play mr-2"></i>开始点名';
+                rollBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+                rollBtn.classList.add('bg-gradient-blue');
+                resultAnimation.classList.add('hidden');
+                
+                const finalItem = rollItem();
+                resultNumber.textContent = finalItem;
+                resultNumber.classList.remove('opacity-0');
+                
+                // 添加到历史记录
+                history.unshift(finalItem);
+                // 限制历史记录数量
+                if (history.length > 50) {
+                    history.pop();
+                }
+                renderHistory();
+                saveHistory();
+                
+                // 添加结果出现动画
+                resultNumber.classList.add('scale-125');
+                setTimeout(() => {
+                    resultNumber.classList.remove('scale-125');
+                }, 300);
+            }
+
+            // 切换滚动状态
+            function toggleRolling() {
+                if (isRolling) {
+                    stopRolling();
+                } else {
+                    startRolling();
+                }
+            }
+
+            // 清空历史记录
+            function clearHistory() {
+                if (history.length === 0) return;
+                
+                if (confirm('确定要清空所有历史记录吗？')) {
+                    history = [];
+                    renderHistory();
+                    saveHistory();
+                    
+                    // 添加清空动画
+                    historyList.classList.add('opacity-0');
+                    setTimeout(() => {
+                        historyList.classList.remove('opacity-0');
+                    }, 300);
+                }
+            }
+
+            // 打开帮助模态框
+            function openHelpModal() {
+                helpModal.classList.remove('hidden');
+                setTimeout(() => {
+                    helpModal.classList.add('opacity-100');
+                    helpModalContent.classList.remove('scale-95', 'opacity-0');
+                    helpModalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            // 关闭帮助模态框
+            function closeHelpModal() {
+                helpModal.classList.remove('opacity-100');
+                helpModalContent.classList.remove('scale-100', 'opacity-100');
+                helpModalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    helpModal.classList.add('hidden');
+                }, 300);
+            }
+
+            // 平滑滚动到设置区域
+            function scrollToSettings() {
+                document.querySelector('section:nth-of-type(3)').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+
+            // 切换点名方式
+            function toggleRollType() {
+                currentRollType = document.querySelector('input[name="rollType"]:checked').value;
+                
+                if (currentRollType === 'name') {
+                    nameListContainer.classList.remove('hidden');
+                    numberRangeContainer.forEach(container => {
+                        container.classList.add('hidden');
+                    });
+                } else {
+                    nameListContainer.classList.add('hidden');
+                    numberRangeContainer.forEach(container => {
+                        container.classList.remove('hidden');
+                    });
+                }
+            }
+
+            // 事件监听器
+            rollBtn.addEventListener('click', toggleRolling);
+            clearHistoryBtn.addEventListener('click', clearHistory);
+            helpBtn.addEventListener('click', openHelpModal);
+            closeHelpBtn.addEventListener('click', closeHelpModal);
+            gotItBtn.addEventListener('click', closeHelpModal);
+            settingsBtn.addEventListener('click', scrollToSettings);
+            rollTypeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleRollType);
+            });
+
+            // 输入验证
+            minNumberInput.addEventListener('change', () => {
+                const min = parseInt(minNumberInput.value) || 1;
+                const max = parseInt(maxNumberInput.value) || 45;
+                
+                if (min < 1) {
+                    minNumberInput.value = 1;
+                }
+                
+                if (min > max) {
+                    maxNumberInput.value = min + 1;
+                }
+            });
+
+            maxNumberInput.addEventListener('change', () => {
+                const max = parseInt(maxNumberInput.value) || 45;
+                const min = parseInt(minNumberInput.value) || 1;
+                
+                if (max > 99) {
+                    maxNumberInput.value = 99;
+                }
+                
+                if (max < min) {
+                    minNumberInput.value = max - 1;
+                }
+            });
+
+            // 初始化
+            renderHistory();
+            toggleRollType(); // 设置初始状态
+            
+            // 添加页面载入动画
+            document.body.classList.add('opacity-0');
+            setTimeout(() => {
+                document.body.classList.add('transition-opacity', 'duration-500');
+                document.body.classList.remove('opacity-0');
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+    
